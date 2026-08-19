@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { QueryClient, HydrationBoundary, dehydrate } from '@tanstack/react-query';
 import { fetchNotes } from '@/lib/api';
@@ -10,6 +11,43 @@ const PER_PAGE = 12;
 
 interface NotesPageProps {
     params: Promise<{ slug: string[] }>;
+}
+
+export async function generateMetadata({ params }: NotesPageProps): Promise<Metadata> {
+    const { slug } = await params;
+    const rawTag = slug?.[0];
+    const isValidTag = (value?: string): value is NoteTag => NOTE_TAGS.includes(value as NoteTag);
+    const tagLabel = isValidTag(rawTag) ? rawTag : 'All';
+
+    const title = `${tagLabel} notes — NoteHub`;
+    const description = `Browse and manage your "${tagLabel}" notes on NoteHub.`;
+    const url = `/notes/filter/${rawTag ?? 'all'}`;
+
+    return {
+        title,
+        description,
+        openGraph: {
+            title,
+            description,
+            url,
+            siteName: 'NoteHub',
+            type: 'website',
+            images: [
+                {
+                    url: 'https://ac.goit.global/fullstack/react/notehub-og-meta.jpg',
+                    width: 1200,
+                    height: 630,
+                    alt: 'NoteHub',
+                },
+            ],
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title,
+            description,
+            images: ['https://ac.goit.global/fullstack/react/notehub-og-meta.jpg'],
+        },
+    };
 }
 
 export default async function NotesPage({ params }: NotesPageProps) {

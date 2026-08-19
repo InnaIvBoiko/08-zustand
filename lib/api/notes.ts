@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import type { AxiosResponse } from 'axios';
 import { api } from './axios';
 import type { NewNote, Note, NoteTag } from '../../types/note';
@@ -44,8 +45,8 @@ export const deleteNote = async (id: string): Promise<Note> => {
     return response.data;
 };
 
-export const fetchNoteById = async (id: string): Promise<Note> => {
+export const fetchNoteById = cache(async (id: string): Promise<Note> => {
     const response: AxiosResponse<Note> = await api.get(`/notes/${id}`);
 
     return response.data;
-};
+});

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { useDebouncedCallback } from 'use-debounce';
 import SearchBox from '@/components/SearchBox/SearchBox';
@@ -8,8 +9,6 @@ import Pagination from '@/components/Pagination/Pagination';
 import Loader from '@/components/Loader/Loader';
 import NoteList from '@/components/NoteList/NoteList';
 import ProgressBar from '@/components/ProgressBar/ProgressBar';
-import Modal from '@/components/Modal/Modal';
-import NoteForm from '@/components/NoteForm/NoteForm';
 import { fetchNotes } from '@/lib/api';
 import type { NoteTag } from '@/types/note';
 import css from './Notes.module.css';
@@ -23,14 +22,12 @@ const PER_PAGE = 12;
 export default function NotesClient({ tag }: NotesClientProps) {
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState('');
-    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const { data, isLoading, isFetching, isError, error } = useQuery({
         queryKey: ['notes', page, search, tag ?? 'all'],
         queryFn: () => fetchNotes({ page, perPage: PER_PAGE, search, tag }),
         placeholderData: keepPreviousData,
         staleTime: 1000 * 60 * 5,
-        refetchOnMount: false,
     });
 
     if (isError) {
@@ -50,9 +47,9 @@ export default function NotesClient({ tag }: NotesClientProps) {
             <header className={css.toolbar}>
                 <SearchBox onSearch={handleSearch} />
                 {totalPages > 1 && <Pagination currentPage={page} pageCount={totalPages} onPageChange={setPage} />}
-                <button className={css.button} onClick={() => setIsModalOpen(true)}>
+                <Link href="/notes/action/create" className={css.button}>
                     Create note +
-                </button>
+                </Link>
             </header>
 
             <main className={css.main}>
@@ -66,12 +63,6 @@ export default function NotesClient({ tag }: NotesClientProps) {
             </main>
 
             {isFetching && !isLoading && <ProgressBar />}
-
-            {isModalOpen && (
-                <Modal onClose={() => setIsModalOpen(false)}>
-                    <NoteForm onCancel={() => setIsModalOpen(false)} />
-                </Modal>
-            )}
         </div>
     );
 }
